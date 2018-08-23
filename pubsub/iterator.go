@@ -15,6 +15,7 @@
 package pubsub
 
 import (
+	"io"
 	"sync"
 	"time"
 
@@ -148,8 +149,9 @@ func (it *streamingMessageIterator) receive() ([]*Message, error) {
 	// Stop retrieving messages if the context is done, the stream
 	// failed, or the iterator's Stop method was called.
 	select {
-	case <-it.ctx.Done():
-		return nil, it.ctx.Err()
+	case <-it.stopped:
+		it.wg.Wait()
+		return nil, io.EOF
 	default:
 	}
 	it.mu.Lock()
